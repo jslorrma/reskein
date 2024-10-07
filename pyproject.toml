@@ -1,0 +1,274 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Project Metadata
+# ─────────────────────────────────────────────────────────────────────────────
+[project]
+name = "reskein"
+authors = [{ name = "Jens Lorrmann", email = "jslorrma@gmail.com" }]
+maintainers = [{ name = "Jens Lorrmann", email = "jslorrma@gmail.com" }]
+description = "Python application and library that adjusts and uses jcrist's Skein library to simplify the deployment of applications on Apache Hadoop cluster using YARN ResourceManager REST API."
+readme = "README.md"
+keywords = ["YARN", "HDFS", "hadoop", "distributed", "cluster"]
+license = { text = "MIT License" }
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: System :: Systems Administration",
+  "Topic :: System :: Distributed Computing",
+]
+dynamic = ["version"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Project Dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+requires-python = ">=3.8"
+
+dependencies = [
+  "requests>=2.32.3,<3",
+  "requests-kerberos>=0.15.0,<0.16",
+  "fsspec>=2024.9.0,<2025",
+  "msgspec>=0.18.6",
+  "skein>=0.8.2",
+  "rich>=13.8.1",
+  "rich-click>=1.8.3",
+  "tqdm>=4.66.5",
+  "python-dotenv>=1.0.1",
+  "portalocker>=2.10.1,<3",
+  "setuptools>=75.1.0,<76",
+]
+
+[tool.pixi.feature.dev.dependencies]
+pytest = ">=8.3.2,<9"
+pytest-mock = ">=3.14.0,<4"
+pytest-cov = ">=5.0.0,<6"
+pytest-html = ">=4.1.1,<5"
+ruff = ">=0.6.2,<0.7"
+black = ">=24.8.0,<25"
+ipykernel = ">=6.29.5,<7"
+pre-commit = ">=3.8.0,<4"
+
+[tool.pixi.target.win-64.pypi-dependencies]
+pywin32 = { version = ">=306" }
+
+[tool.pixi.pypi-dependencies]
+reskein = { path = ".", editable = true }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Project Entrypoints
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+[project.scripts]
+reskein = "reskein.__main__:main"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Build System Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/reskein/_version.py"
+
+[tool.hatch.build]
+packages = ["src/reskein"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/reskein", "reskein"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["src/reskein", "reskein"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pixi Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "win-64"]
+
+[tool.pixi.environments]
+dev = { features = ["dev"], solve-group = "default" }
+
+[tool.pixi.tasks]
+post-install = "pre-commit install"
+
+[tool.pixi.feature.dev.tasks.test]
+# Run tests with pytest and generate a coverage report in XML format
+cmd = "pytest -s -v --cov"
+
+[tool.pixi.feature.dev.tasks.test-reports]
+# Run tests with pytest and generate a coverage report in XML format
+cmd = "pytest -s -v --cov-report=xml:reports/coverage.xml --junitxml=reports/junit.xml --html=reports/report.html"
+
+[tool.pixi.feature.dev.tasks.ruff-check]
+# Format code using Ruff
+cmd = "ruff check --fix --exit-non-zero-on-fix --force-exclude ./src"
+
+[tool.pixi.feature.dev.tasks.format]
+# Format code using Ruff
+cmd = "ruff format --force-exclude ./src"
+
+[tool.pixi.feature.dev.tasks.pre-commit]
+# Run all pre-commit hooks
+cmd = "pre-commit run --all-files"
+
+[tool.pixi.feature.dev.tasks.bump-version]
+# Bump the project version using Hatch
+# Usage: pixi run -e dev bump-version [patch|minor|major],[dev]
+cmd = "pixi exec hatch version $segment"
+
+[tool.pixi.feature.dev.tasks.build-sdist]
+# Build the source distribution (sdist) using Hatch
+# Inputs: source files and pyproject.toml
+# Outputs: tar.gz files in the dist directory
+cmd = "pixi exec hatch build -t sdist"
+inputs = ["src/**/*", "pyproject.toml"]
+outputs = ["dist/*.tar.gz"]
+
+[tool.pixi.feature.dev.tasks.build-wheel]
+# Build the wheel distribution using Hatch
+# Inputs: source files and pyproject.toml
+# Outputs: wheel files in the dist directory
+cmd = "pixi exec hatch build -t wheel"
+inputs = ["src/**/*", "pyproject.toml"]
+outputs = ["dist/*.whl"]
+
+[tool.pixi.feature.dev.tasks.build]
+# Build the wheel and ource distribution (sdist) distribution using Hatch
+cmd = "pixi exec hatch build -t wheel -t sdist"
+inputs = ["src/**/*", "pyproject.toml"]
+outputs = ["dist/*.whl", "dist/*.tar.gz"]
+
+[tool.pixi.feature.dev.tasks.recipe-v1]
+# Generate a conda recipe using grayskull
+# Usage: pixi run -e dev recipe
+cmd = """pixi exec grayskull pypi --strict-conda-forge --use-v1-format reskein \
+&& sed -i 's/\\${{ PYTHON }}/python/g' reskein/recipe.yaml
+"""
+cwd = "recipe"
+
+[tool.pixi.feature.dev.tasks.recipe-v0]
+# Generate a conda recipe using grayskull
+# Usage: pixi run -e dev recipe
+cmd = """pixi exec grayskull pypi --strict-conda-forge reskein; \
+sed -i 's/\\${{ PYTHON }}/python/g' reskein/meta.yaml; \
+sed -i '/about:/a \\ \\ home: https://github.com/jslorrma/reskein' reskein/meta.yaml
+"""
+cwd = "recipe"
+
+[tool.pixi.feature.dev.tasks.release]
+# Release the project to PyPI using Hatch
+# Usage: pixi run -e dev release
+cmd = """version=$(pixi exec hatch version) \
+&& pixi update \
+&& git add pixi.lock pyproject.toml src/reskein/_version.py \
+&& git commit -m "Release v$version" \
+&& git push origin \
+&& git tag -a v$version -m "Release v$version" \
+&& git push origin v$version
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Code Formatting and Linting
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+fix = true
+src = ["src"]
+lint.select = [
+  "I",   # isort
+  "F",   # pyflakes
+  "E",
+  "W",   # pycodestyle
+  "B",   # flake8-bugbear
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW", # pylint
+  "PIE", # misc lints
+  "ISC", # implicit string concatenation
+  "TCH", # type-checking imports
+  "C4",  # comprehensions
+  "PGH", # pygrep-hooks
+  "UP",  # pyupgrade
+  "RUF", # Ruff-specific rules
+]
+lint.unfixable = ["PLR"]
+lint.ignore = [
+  # space before : (needed for how black formats slicing)
+  "E203", # not yet implemented
+  # module level import not at top of file
+  "E402",
+  # line tool long (will be handled by black)
+  "E501",
+  # Conflicts with ruff format
+  "W191",
+  # Function is too complex
+  "C901",
+  # do not assign a lambda expression, use a def
+  "E731",
+  # unused variables in function scopes
+  "F841",
+  # line break before binary operator
+  # "W503",  # not yet implemented
+  # line break after binary operator
+  # "W504",  # not yet implemented
+  # invalid escape sequence
+  "W605",
+  # controversial
+  "B006",
+  # controversial
+  "B007",
+  # controversial
+  "B008",
+  # setattr is used to side-step mypy
+  "B009",
+  # getattr is used to side-step mypy
+  "B010",
+  # tests use assert False
+  "B011",
+  # tests use comparisons but not their returned value
+  "B015",
+  # false positives
+  "B019",
+  # # Loop control variable overrides iterable it iterates
+  # "B020",
+  # # Function definition does not bind loop variable
+  # "B023",
+  # Functions defined inside a loop must not use variables redefined in the loop
+  # "B301",  # not yet implemented
+  # # Only works with python >=3.10
+  # "B905",
+  # # Too many arguments to function call
+  # "PLR0913",
+  # # Too many returns
+  # "PLR0911",
+  # Too many branches
+  "PLR0912",
+  # Too many statements
+  "PLR0915",
+  # Redefined loop name
+  "PLW2901",
+  # Global statements are discouraged
+  "PLW0603",
+  # Docstrings should not be included in stubs
+  "PYI021",
+  # No builtin `eval()` allowed
+  "S307",
+  # compare-to-empty-string
+  "PLC1901",
+  # Use typing_extensions.TypeAlias for type aliases
+  # "PYI026",  # not yet implemented
+  # Use "collections.abc.*" instead of "typing.*" (PEP 585 syntax)
+  # "PYI027",  # not yet implemented
+  # while int | float can be shortened to float, the former is more explicit
+  # "PYI041",  # not yet implemented
+  # Checks for implicitly concatenated strings on a single line.
+  "ISC001",
+]
