@@ -39,13 +39,13 @@ class ApplicationLogs(Mapping):
         return len(self.logs)
 
     def __repr__(self):
-        return "ApplicationLogs<%s>" % self.app_id
+        return f"ApplicationLogs<{self.app_id}>"
 
     def _ipython_key_completions_(self):
         return list(self.logs)
 
     def _repr_html_(self):
-        elements = ["<h3 style='margin-bottom: 10px'>%s</h3>\n" % self.app_id]
+        elements = [f"<h3 style='margin-bottom: 10px'>{self.app_id}</h3>\n"]
         elements.extend(
             f"<details>\n<summary style='display:list-item'>{title}</summary>\n"
             f"<pre><code>\n{log}\n\n</code></pre>\n"
@@ -67,7 +67,7 @@ class ApplicationLogs(Mapping):
         else:
             write = print
         N = len(self.logs) - 1
-        write("** Logs for %s **" % self.app_id)
+        write(f"** Logs for {self.app_id} **")
         write("")
         for n, (k, v) in enumerate(sorted(self.logs.items())):
             write(k)
@@ -111,9 +111,9 @@ def _normpath(path: str, origin: str | None = None):
     This function is a monkey patch for skein.model.File's _normpath to properly
     handle windows paths.
     """
-    _has_scheme = lambda path: len(re.findall("([a-zA-Z0-9\-\_\.]*)://", path)) > 0
+    _has_scheme = lambda path: len(re.findall("([-a-zA-Z0-9_.]*)://", path)) > 0
     if not _has_scheme(path):
-        path = "file://%s" % (pathlib.Path(path).absolute().as_posix())
+        path = f"file://{pathlib.Path(path).absolute().as_posix()}"
 
     url = urlparse(path)
     if not url.scheme:
