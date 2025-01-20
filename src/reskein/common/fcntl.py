@@ -51,7 +51,7 @@ class BaseLockException(Exception):
         **kwargs: typing.Any,
     ) -> None:
         self.fh = fh
-        Exception.__init__(self, *args)
+        Exception.__init__(self, *args: tuple)
 
 
 class LockException(BaseLockException):

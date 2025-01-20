@@ -48,6 +48,7 @@ __maintainer__ = "jslorrma"
 __email__ = "jslorrma@gmail.com"
 
 import time
+from typing import Any
 
 import msgspec
 from skein import model as skein_model
@@ -173,7 +174,7 @@ class Client(_ClientBase):
         user: str | None = None,
         log: PathType | (bool | None) = None,
         log_level: str | (int | None) = None,
-        **kwargs,  # will be passed to request aut handler
+        **kwargs: dict[str, Any],  # will be passed to request aut handler
     ):
         from .driver import Driver
 
@@ -230,7 +231,7 @@ class Client(_ClientBase):
         user: str | None = None,
         log: PathType | bool | None = None,
         log_level: str | int | None = None,
-        **kwargs,  # will be passed to request aut handler
+        **kwargs: dict[str, Any],  # will be passed to request aut handler
     ):
         """
         Initialize and start the "global driver" by setting up connections, testing them, and
@@ -414,7 +415,7 @@ class Client(_ClientBase):
         """
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: tuple):
         """
         Support for `with` statement.
 
@@ -459,7 +460,7 @@ class Client(_ClientBase):
         if app_id not in [_app.id for _app in self.get_applications(states=_all_states)]:
             raise DriverError(f"Application with app id '{app_id}' not found!")
 
-    def submit(self, spec, **kwargs):
+    def submit(self, spec, **kwargs: dict[str, Any]):
         """
         Submit a new `Skein` application.
 
@@ -489,7 +490,7 @@ class Client(_ClientBase):
         app_id = self._driver.submit_application(spec, **kwargs)
         return app_id
 
-    def submit_and_connect(self, spec, **kwargs):
+    def submit_and_connect(self, spec, **kwargs: dict[str, Any]):
         """
         Submit a new `Skein` application, and wait to connect to it.
 
@@ -588,7 +589,7 @@ class Client(_ClientBase):
         if security is None:
             security = skein_model.Security.from_default()
 
-        return ApplicationClient("%s:%d" % (report.host, report.port), app_id, security=security)
+        return ApplicationClient(f"{report.host}:{report.port}", app_id, security=security)
 
     def get_applications(  # noqa: PLR0913
         self,

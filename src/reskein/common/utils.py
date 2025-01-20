@@ -14,8 +14,10 @@ __email__ = "jslorrma@gmail.com"
 
 # imports
 import functools
-from collections.abc import Callable, Iterable
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
 
 try:  # cache is new in 3.9
     from functools import cache
@@ -27,8 +29,8 @@ except ImportError:  # python < 3.9
 
         @functools.wraps(func)
         @functools.lru_cache(maxsize=None)  # noqa: UP033
-        def f(*args, **kwargs):
-            return func(*args, **kwargs)
+        def f(*args: tuple, **kwargs: dict[str, Any]):
+            return func(*args: tuple, **kwargs)
 
         return f
 

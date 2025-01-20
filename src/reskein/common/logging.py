@@ -15,7 +15,7 @@ __email__ = "jslorrma@gmail.com"
 import logging
 import os
 import pathlib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from rich.console import Console, ConsoleRenderable, RenderableType, _is_jupyter
 from rich.logging import LogRender, RichHandler
@@ -154,8 +154,8 @@ class _LogRender(LogRender):
 
 
 class _RichHandler(RichHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args: tuple, **kwargs: dict[str, Any]):
+        super().__init__(*args: tuple, **kwargs)
         self._log_render = _LogRender(time_format=kwargs.get("log_time_format"))
         self.setFormatter(logging.Formatter("[bold]%(name)s[/] - %(message)s"))
 

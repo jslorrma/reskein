@@ -3,29 +3,16 @@
 *.py[cod]
 *.so
 *.dll
-*.cfg
-!.isort.cfg
-!setup.cfg
-*.orig
 *.log
-*.pot
 __pycache__/*
 .cache/*
-.*.swp
-*/.ipynb_checkpoints/*
 .DS_Store
 
 # Project files
-.ropeproject
-.project
-.pydevproject
 .settings
 .idea
 .vscode
-.gitlabtoken
-tags
 **/.ipynb_checkpoints
-examples/notebooks/*.ipynb
 
 # Package files
 *.egg
@@ -45,12 +32,6 @@ coverage.xml
 # Build and docs folder/files
 build/*
 dist/*
-conda-dist/*
-sdist/*
-docs/api/*
-docs/_rst/*
-docs/_build/*
-cover/*
 **/bin/*
 **/obj/*
 **/publish/*
@@ -62,13 +43,7 @@ MANIFEST
 .venv*/
 .conda*/
 .pixi*/
-poetry.lock
 
 # manual ignores
 log.txt
 
-# pixi environments
-pixi.lock
-# pixi environments
-.pixi
-*.egg-info

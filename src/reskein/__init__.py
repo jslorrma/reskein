@@ -20,7 +20,7 @@ Features:
 
 [1]: https://github.com/jcrist/skein
 [2]: https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/ResourceManagerRest.html
-"""
+""" # noqa: D205
 
 from __future__ import annotations
 
@@ -39,12 +39,13 @@ except ImportError:
 import pathlib
 import sys
 
-LIBRARY_NAME = __name__
-
 # set up logging
 from .common.logging import get_logger
 
 logger = get_logger(__name__)
+
+# constants
+LIBRARY_NAME = __name__
 
 # type definitions
 PathType = str | pathlib.Path
@@ -92,13 +93,14 @@ skein.model.File._normpath = _normpath
 # monkey patch skein.core.Client
 import skein
 
-from .client import Client
+from .client import Client 
 
 skein.Client = Client
 skein.core.Client = Client
 
 # specify the configuration directory
-from skein.core import properties  # noqa: I001
+from skein.core import properties  # noqa: E402
+
 CONFIG_DIR = (
     pathlib.Path.cwd() / ".skein"
     if (pathlib.Path.cwd() / ".skein").exists()

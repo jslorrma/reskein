@@ -9,7 +9,7 @@ well as to connect to and submit applications.
 
 [1]: https://github.com/jcrist/skein/blob/master/java/src/main/java/com/anaconda/skein/Driver.java
 [2]: https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/ResourceManagerRest.html
-"""
+""" # noqa: D205
 
 from __future__ import annotations
 
@@ -35,6 +35,7 @@ from skein.model import ApplicationSpec, File, Master, Security, Service
 
 from .. import CONFIG_DIR
 from ..common.auth import Authentication
+from ..common.context import CONTEXT
 from ..common.exceptions import (
     DriverConfigurationError,
     DriverConnectionError,
@@ -61,18 +62,11 @@ if TYPE_CHECKING:
 # init logging
 logger = get_logger(__package__)
 
-# make sure the directory exists
-CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-"""The configuration directory for reskein."""
-
-_DRIVER_ARGS_FILE = CONFIG_DIR / "driver"
-"""The file containing the driver initialization arguments."""
-_DRIVER_ENV_FILE = CONFIG_DIR / "driver.env"
-"""The file containing the driver environment variables."""
-
-
 class Driver:
-    """Python skein `Driver` implementation using YARN's web services REST API to
+    """
+    Python skein `Driver` implementation.
+
+    Python skein `Driver` implementation using YARN's web services REST API to
     gather cluster and application informationas well as to connect to and schedule
     applications. In contrast to the `skein` implementation this `Driver` is
     written in Python and it's not necessary to be run in a seperate process.
@@ -139,28 +133,28 @@ class Driver:
     """
 
     __slots__ = (
-        "_timeout",
-        "_verify",
-        "_proxies",
-        "_keytab",
-        "_principal",
-        "_user",
         "_auth",
         "_auth_handler",
-        "_rm_address",
-        "_hdfs_address",
-        "_fs",
-        "_rm",
-        "_session",
         "_connected",
-        "_kinit_cmd",
         "_defaultFS",
-        "_from_global_driver"
+        "_from_global_driver",
+        "_fs",
+        "_hdfs_address",
+        "_keytab",
+        "_kinit_cmd",
+        "_principal",
+        "_proxies",
+        "_rm",
+        "_rm_address",
+        "_session",
+        "_timeout",
+        "_user",
+        "_verify"
     )
 
     _instance: Driver | None = None
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: tuple, **kwargs: dict[str, Any]) -> Driver:  # noqa: ARG003
         """
         Create a new instance of the Driver class or return the global driver instance.
 
@@ -168,7 +162,6 @@ class Driver:
         been initialized, the global driver instance is returned. If the global driver has not
         been initialized, a new instance of the Driver class is created.
         """
-
         _global_driver_kwargs = read_driver()
 
         kwargs = {
@@ -176,17 +169,19 @@ class Driver:
             **kwargs,
         }
 
+        # if global driver is already initialized
         if kwargs == _global_driver_kwargs and kwargs:
             logger.debug("loading global driver ...")
             if cls._instance is None:
                 cls._instance  = super().__new__(cls)
-            cls._instance._from_global_driver = True
+            cls._instance._from_global_driver = True  # noqa: SLF001
             return cls._instance
-        else:
-            logger.debug("initializing new driver ...")
-            _instance  = super().__new__(cls)
-            _instance._from_global_driver = False
-            return _instance
+
+        # else create new driver
+        logger.debug("initializing new driver ...")
+        _instance  = super().__new__(cls)
+        _instance._from_global_driver = False  # noqa: SLF001
+        return _instance
 
 
     def __init__(  # noqa: PLR0913
@@ -202,8 +197,8 @@ class Driver:
         user: str | None = None,
         log: PathType | bool | None = None,
         log_level: str | int | None = None,
-        **kwargs,  # will be passed to request auth handler
-    ):
+        **kwargs: dict[str, Any],  # will be passed to request auth handler
+    ) -> None:
         if not getattr(self, "_from_global_driver", False):
             self._setup_logging(log_level=log_level, log=log)
             self._setup_authentication(
@@ -220,7 +215,7 @@ class Driver:
             # test connection only if a new driver is initialized
             self._test_connection()
 
-    def _setup_logging(self, log_level: str | int | None, log: PathType | bool | None):
+    def _setup_logging(self, log_level: str | int | None, log: PathType | bool | None) -> None:
         """
         Set up logging for the Driver class.
 
@@ -241,8 +236,8 @@ class Driver:
         keytab: PathType | None,
         principal: str | None,
         user: str | None,
-        **kwargs,
-    ):
+        **kwargs: dict[str, Any],
+    ) -> None:
         """
         Set up Kerberos for the Driver class.
 
@@ -335,7 +330,7 @@ class Driver:
         timeout: int | float,
         verify: bool | PathType,
         proxies: dict[str, str],
-    ):
+    )-> None:
         """
         Update class attributes for the Driver class.
 
@@ -352,7 +347,6 @@ class Driver:
         proxies : dict[str, str]
             Proxies to use.
         """
-
         # set session attributes
         self._verify = verify if verify is not None else True
         self._proxies = proxies
@@ -390,7 +384,7 @@ class Driver:
         )
         logger.debug(f"HDFS address set to {self._hdfs_address}")
 
-    def _test_connection(self):
+    def _test_connection(self) -> None:
         """
         'Ping' service nodes to test connection.
 
@@ -433,7 +427,7 @@ class Driver:
         try:
             logger.debug(
                 "Testing driver connection to RessourceManager at "
-                f"{urlparse(self.rm._address).netloc} "
+                f"{urlparse(self.rm._address).netloc} "  # noqa: SLF001
                 f"and (Web)HDFS at {urlparse(self.fs.url).netloc}"
             )
             self.rm.cluster()
@@ -471,7 +465,7 @@ class Driver:
         user: str | None = None,
         log: PathType | bool | None = None,
         log_level: str | int | None = None,
-        **kwargs,  # will be passed to request auth handler
+        **kwargs: dict[str, Any],  # will be passed to request auth handler
         ) -> Driver:
         """
         Start the global driver or return the existing one.
@@ -579,7 +573,7 @@ class Driver:
         return gloabl_driver
 
     @classmethod
-    def stop_global_driver(cls):
+    def stop_global_driver(cls) -> None:
         """
         Stop the global driver.
 
@@ -626,12 +620,12 @@ class Driver:
     # def __reduce__(self):
     #     return (type(self), (self._rm_address, self._hdfs_address, self._auth))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Driver<RM:{self._rm_address}, HDFS:{self._hdfs_address}>"
 
     # get defaultFS
     @property
-    def defaultFS(self):
+    def defaultFS(self) -> str | None:
         """
         Get WebHDFS defaultFS.
 
@@ -653,10 +647,10 @@ class Driver:
                 logger.debug(f"DefaultFS set to {self._defaultFS} from HadoopConfig")
             else:
                 # try getting from ResourceManager
-                url = urljoin(self.rm._address, "/conf")
+                url = urljoin(self.rm._address, "/conf")  # noqa: SLF001
                 try:
                     _conf = StringIO(
-                        self.rm._session.request(
+                        self.rm._session.request(  # noqa: SLF001
                             method="GET",
                             url=url,
                         ).text
@@ -683,7 +677,7 @@ class Driver:
 
         return self._defaultFS
 
-    def _call(self, method: str, timeout: int | float | None = None, **kwargs):
+    def _call(self, method: str, timeout: int | float | None = None, **kwargs: dict[str, Any]) -> Any:
         """
         Call a method on the ResourceManager.
 
@@ -718,7 +712,7 @@ class Driver:
             logger.exception(f"Exception occurred while calling method {method}: {_exc}")
 
     @cache
-    def _get_app_dir(self, appId: str, staging_dir: str | None = None) -> str:
+    def _get_app_dir(self, app_id: str, staging_dir: str | None = None) -> str:
         """
         Get the Skein application directory.
 
@@ -728,7 +722,7 @@ class Driver:
 
         Parameters
         ----------
-        appId : str
+        app_id : str
             The ID of the Skein application.
         staging_dir : str, optional
             The staging directory for the application. If not provided, it
@@ -742,10 +736,10 @@ class Driver:
 
         """
         _staging_dir = staging_dir or f"{self.fs.home_directory()}/.skein"
-        return f"{_staging_dir}/{appId}"
+        return f"{_staging_dir}/{app_id}"
 
     def submit_application(
-        self, spec: ApplicationSpec, staging_dir: str | None = None, **kwargs
+        self, spec: ApplicationSpec, staging_dir: str | None = None, **kwargs: dict[str, Any]
     ) -> str:
         """
         Submit a Skein application.
@@ -822,7 +816,7 @@ class Driver:
         app_dir: str | None = None,
         prologue: str = "",
         epilogue: str = "",
-        **kwargs,
+        **kwargs: dict[str, Any],
     ) -> ApplicationSubmissionContext:
         """
         Create an application submission context from a Skein application specification.
@@ -865,7 +859,7 @@ class Driver:
         env["SKEIN_APPLICATION_ID"] = app_id
         env["LANG"] = os.getenv("LANG", "en_US.UTF-8")
 
-        log4jConfig = (
+        log4j_config = (
             "-Dlog4j.configuration=file:./.skein.log4j.properties "
             if spec.master.log_config is not None
             else ""
@@ -920,7 +914,7 @@ class Driver:
                     rf"""
                     # start application master
                     # -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5007
-                    ${{JAVA_HOME:-/usr}}/bin/java -Xmx128M {log4jConfig} \
+                    ${{JAVA_HOME:-/usr}}/bin/java -Xmx128M {log4j_config} \
                         -Dskein.log.level={spec.master.log_level} \
                         -Dskein.log.directory={_SKEIN_LOG_DIR_EXPANSION_VAR} \
                         com.anaconda.skein.ApplicationMaster {app_dir} > {_SKEIN_LOG_DIR_EXPANSION_VAR}/application.master.log 2>&1
@@ -966,7 +960,7 @@ class Driver:
             **kwargs,
         ).with_commands(master_cmd)
 
-    def _collect_tokens(self):
+    def _collect_tokens(self) -> dict[str, str] | None:
         """
         Collect ResourceManager and (Web)HDFS delegation tokens.
 
@@ -1003,7 +997,7 @@ class Driver:
 
         return _tokens or None
 
-    def _setup_app_dir(self, spec: ApplicationSpec, app_dir: str, **kwargs):
+    def _setup_app_dir(self, spec: ApplicationSpec, app_dir: str, **kwargs: dict[str, Any]) -> None:
         """
         Set up the remote Skein application directory and handle local resources.
 
@@ -1065,7 +1059,7 @@ class Driver:
             app_dir, File(proto_path, "FILE"), False
         )
 
-    def _finalize_master(self, master: Master, app_dir: str, **kwargs):
+    def _finalize_master(self, master: Master, app_dir: str, **kwargs: dict[str, Any]) -> None:
         """
         Handle master by uploading local resources and writing application specification to file.
 
@@ -1082,13 +1076,12 @@ class Driver:
         **kwargs : dict, optional
             Additional keyword arguments.
         """
-
         # upload local resources from spec for master to app_dir
         for resource in master.files:
             self._finalize_local_resource(
                 app_dir=app_dir,
                 local_resource=master.files[resource],
-                hash=True,
+                use_hash=True,
                 **kwargs,
             )
 
@@ -1110,7 +1103,7 @@ class Driver:
         for file_name, local_resource in master_files:
             if local_resource:
                 master.files[file_name] = self._finalize_local_resource(
-                    app_dir=app_dir, local_resource=local_resource, hash=False
+                    app_dir=app_dir, local_resource=local_resource, use_hash=False
                 )
 
     def _finalize_service(  # noqa: PLR0913
@@ -1121,11 +1114,10 @@ class Driver:
         cert_file: File,
         key_file: File,
         keytab_file: File = None,
-        **kwargs,
-    ):
+        **kwargs: dict[str, Any],
+    ) -> None:
         """
-        Handle service by creating and uploading service shell script and adding and uploading
-        security files.
+        Create and upload service shell script and add and upload security files.
 
         This method creates a shell script for the service, uploads it to the Skein application
         directory, and adds it to the service's files. It also uploads the certificate and key
@@ -1160,7 +1152,7 @@ class Driver:
             self._finalize_local_resource(
                 app_dir=app_dir,
                 local_resource=service.files[resource],
-                hash=True,
+                use_hash=True,
                 **kwargs,
             )
 
@@ -1174,7 +1166,7 @@ class Driver:
 
         # Upload service script
         service.files[".skein.sh"] = self._finalize_local_resource(
-            app_dir=app_dir, local_resource=File(script_path, "FILE"), hash=False, **kwargs
+            app_dir=app_dir, local_resource=File(script_path, "FILE"), use_hash=False, **kwargs
         )
 
         # add cert files
@@ -1203,7 +1195,7 @@ class Driver:
             """
         )
 
-    def _upload_file(self, source: str, dest: str, progress: bool):
+    def _upload_file(self, source: str, dest: str, progress: bool) -> None:
         """
         Upload a file to the destination filesystem.
 
@@ -1246,7 +1238,7 @@ class Driver:
         self.fs.chmod(dest, _SKEIN_FILE_PERM)
 
     def _finalize_local_resource(
-        self, app_dir: str, local_resource: File, hash: bool = False, **kwargs
+        self, app_dir: str, local_resource: File, use_hash: bool = False, **kwargs: dict[str, Any]
     ) -> File:
         """
         Upload resources to `app_dir` if not already exists and adjust resource details accordingly.
@@ -1257,7 +1249,7 @@ class Driver:
             The directory where the application resources will be uploaded.
         local_resource : File
             The local resource file to be uploaded.
-        hash : bool, optional
+        use_hash : bool, optional
             If True, a hash of the local resource source is used as a prefix for the destination
             directory, by default `False`.
         **kwargs
@@ -1275,12 +1267,11 @@ class Driver:
         destination filesystem. The size and timestamp of the local resource are updated to
         match those of the uploaded file.
         """
-
         # get filename
         _src_filename = pathlib.Path(local_resource.source).name
 
         # get destination directory
-        if hash:
+        if use_hash:
             # use hash of source as prefix for destination directory
             import hashlib
 
@@ -1363,7 +1354,7 @@ def read_driver() -> dict[str, Any]:
         logger.debug("Failed to read driver init file, returning no init args...")
         return {}
 
-def write_driver(**kwargs):
+def write_driver(**kwargs: dict[str, Any]):
     """
     Writes the given keyword arguments to the driver file using YAML.
 
@@ -1413,7 +1404,7 @@ def load_driver_env_vars():
 
 def write_driver_env_vars(
     update: bool = True,
-    **kwargs,
+    **kwargs: dict[str, Any],
 ):
     """
     Write environment variables to the `.env` file in the global
@@ -1431,7 +1422,7 @@ def write_driver_env_vars(
         _env_vars = dotenv_values(_DRIVER_ENV_FILE) | {
             env_key: os.getenv(env_key)
             for env_key in os.environ
-            if any(key in env_key for key in ("SKEIN", "HADOOP", "KRB5", "YARN", "HDFS"))
+            if any(key in env_key for key in _ENV_KEYS)
         }
     logger.debug(f"Writing environment variables to .env file with kwargs: {_env_vars}")
 

@@ -92,7 +92,7 @@ class ResourceManager:
         method: str = "GET",
         timeout: int | (float | None) = None,
         full_response: bool = False,
-        **kwargs,
+        **kwargs: dict[str, Any],
     ) -> dict[str, Any] | (str | requests.Response):
         """Execute request and handle response
 
@@ -154,7 +154,7 @@ class ResourceManager:
         except (msgspec.DecodeError, TypeError):
             return response.text
 
-    def cluster(self, **kwargs) -> dict[str, Any]:
+    def cluster(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get cluster information
 
@@ -169,7 +169,7 @@ class ResourceManager:
         path = "info"
         return self._request(path, **kwargs)
 
-    def metrics(self, **kwargs) -> dict[str, Any]:
+    def metrics(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get cluster metrics.
 
@@ -185,7 +185,7 @@ class ResourceManager:
         path = "metrics"
         return self._request(path, **kwargs)
 
-    def scheduler(self, **kwargs) -> dict[str, Any]:
+    def scheduler(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get cluster scheduler details
 
@@ -203,7 +203,7 @@ class ResourceManager:
         path = "scheduler"
         return self._request(path, **kwargs)
 
-    def delegation_token(self, renewer: str | None = None, **kwargs) -> dict[str, Any]:
+    def delegation_token(self, renewer: str | None = None, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get ResourceManager delegation token
 
@@ -245,7 +245,7 @@ class ResourceManager:
         name: str | None = None,
         limit: int | None = None,
         de_selects: list[str] | None = None,
-        **kwargs,
+        **kwargs: dict[str, Any],
     ) -> dict[str, Any]:
         """
         Get cluster applications.
@@ -334,7 +334,7 @@ class ResourceManager:
         self,
         states: list[str] | None = None,
         application_types: list[str] | None = None,
-        **kwargs,
+        **kwargs: dict[str, Any],
     ) -> dict[str, Any]:
         """
         Get application statistics.
@@ -376,7 +376,7 @@ class ResourceManager:
 
         return self._request(path, params=params, **kwargs)
 
-    def application(self, application_id: str, **kwargs) -> dict[str, Any]:
+    def application(self, application_id: str, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get information about application with `application_id`
 
@@ -397,7 +397,7 @@ class ResourceManager:
         path = f"apps/{application_id}"
         return self._request(path, **kwargs)
 
-    def application_attempts(self, application_id: str, **kwargs) -> dict[str, Any]:
+    def application_attempts(self, application_id: str, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get information about application with `application_id`
 
@@ -418,7 +418,7 @@ class ResourceManager:
         path = f"apps/{application_id}/appattempts"
         return self._request(path, **kwargs)
 
-    def application_attempt(self, application_id: str, attempt_id: str, **kwargs) -> dict[str, Any]:
+    def application_attempt(self, application_id: str, attempt_id: str, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get information about application with `application_id` for `attempt_id`
 
@@ -494,7 +494,7 @@ class ResourceManager:
         path = f"apps/{application_id}/appattempts/{attempt_id}/containers{container_id}"
         return self._request(path, **kwargs)
 
-    def new_application(self, **kwargs) -> dict[str, Any]:
+    def new_application(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Submit an cluster application.
 
@@ -513,7 +513,7 @@ class ResourceManager:
 
         return self._request(path, "POST", **kwargs)
 
-    def submit_application(self, spec: PathType | dict[str, Any], **kwargs) -> dict[str, Any]:
+    def submit_application(self, spec: PathType | dict[str, Any], **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Submit an cluster application.
 
@@ -557,7 +557,7 @@ class ResourceManager:
             **kwargs,
         )
 
-    def move_application(self, application_id: str, queue: str, **kwargs) -> dict[str, Any]:
+    def move_application(self, application_id: str, queue: str, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Move an cluster application.
 
@@ -587,7 +587,7 @@ class ResourceManager:
         path = f"apps/{application_id}/queue"
         return self._request(path, "PUT", json=data, **kwargs)
 
-    def kill_application(self, application_id: str, **kwargs) -> dict[str, Any]:
+    def kill_application(self, application_id: str, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Kill cluster application with `application_id`
 
@@ -608,7 +608,7 @@ class ResourceManager:
         path = f"apps/{application_id}/state"
         return self._request(path, "PUT", json=data, **kwargs)
 
-    def nodes(self, states: list[str] | None = None, **kwargs) -> dict[str, Any]:
+    def nodes(self, states: list[str] | None = None, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get cluster nodes.
 
@@ -637,7 +637,7 @@ class ResourceManager:
         }
         return self._request(path, params=params, **kwargs)
 
-    def node(self, node_id: str | None, **kwargs) -> dict[str, Any]:
+    def node(self, node_id: str | None, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get cluster node details.
 
@@ -657,7 +657,7 @@ class ResourceManager:
         path = f"nodes/{node_id}"
         return self._request(path, **kwargs)
 
-    def queues(self, **kwargs) -> dict[str, Any]:
+    def queues(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         """
         Get all cluster queues.
 
@@ -682,7 +682,7 @@ class ResourceManager:
 
         return queues
 
-    def queue(self, queue: str, **kwargs) -> dict[str, Any] | None:
+    def queue(self, queue: str, **kwargs: dict[str, Any]) -> dict[str, Any] | None:
         """
         Get cluster queue.
 
@@ -702,7 +702,7 @@ class ResourceManager:
         """
         return self.queues(**kwargs).get(queue)
 
-    def child_queues(self, queue: str, **kwargs) -> list[dict[str, Any]]:
+    def child_queues(self, queue: str, **kwargs: dict[str, Any]) -> list[dict[str, Any]]:
         """Get cluster children queues.
 
         Given a parent queue name, this function tries to gather all children queues in
@@ -725,7 +725,7 @@ class ResourceManager:
             if "queuePath" in q and f"{queue}." in q.get("queuePath")
         ]
 
-    def application_logs(self, application_id: str, **kwargs) -> dict[str, str]:
+    def application_logs(self, application_id: str, **kwargs: dict[str, Any]) -> dict[str, str]:
         """
         Get application logs.
 
@@ -798,7 +798,7 @@ class ResourceManager:
 
             return _logs
 
-    def get_config(self, out_path: PathType | None = None, name: str | None = None, **kwargs):
+    def get_config(self, out_path: PathType | None = None, name: str | None = None, **kwargs: dict[str, Any]):
         """
         Get hadoop config ('core-site.xml', 'yarn-site.xml', 'hdfs-site.xml')
         and set the Hadoop config path to the output path.

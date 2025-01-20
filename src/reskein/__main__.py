@@ -30,14 +30,14 @@ __email__ = "jslorrma@gmail.com"
 
 import os
 import pathlib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 import rich_click as click
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-from rich.traceback import install
+from rich.traceback import install as rich_traceback_install
 from skein.exceptions import ApplicationNotRunningError, ConnectionError
 from skein.model import ContainerState
 from skein.utils import humanize_timedelta
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from skein.model import ApplicationReport, Container
 
 # install rich traceback
-install(show_locals=True, max_frames=5)
+rich_traceback_install(show_locals=True, max_frames=5)
 
 # click rich configuration
 # click.rich_click.USE_MARKDOWN = True
@@ -66,6 +66,7 @@ _TERMINAL_WIDTH = os.get_terminal_size().columns
 # validation functions
 #
 def _validate_config_dir(ctx, param, value):
+    """Helper function to validate a given path is a valid Hadoop configuration directory."""
     if value is None:
         return value
     value = pathlib.Path(value).resolve().absolute()
@@ -80,6 +81,7 @@ def _validate_config_dir(ctx, param, value):
 
 
 def _validate_url(ctx, param, value):
+    """Helper function to validate a given URL is a valid URL."""
     if value is None:
         return value
     parsed = urlparse(value)
@@ -88,7 +90,8 @@ def _validate_url(ctx, param, value):
     return value
 
 
-def _validate_log(ctx, param, value):
+def _validate_bool(ctx, param, value):
+    """Validate and return a given value as a boolean or a path."""
     if isinstance(value, str):
         if value.lower() in ("true", "1", "on"):
             return True
@@ -100,7 +103,7 @@ def _validate_log(ctx, param, value):
 
 
 # create a output table
-def _make_output_table(title: str, header: list[tuple[str, dict]], rows: list[list[str]], **kwargs):
+def _make_output_table(title: str, header: list[tuple[str, dict]], rows: list[list[str]], **kwargs: dict[str, Any]):
     """
     Create a table for output.
 
@@ -222,6 +225,7 @@ def config():
 ## DRIVER
 ################
 def _driver_info(context: str | None = None):
+    from .common.context import CHECK_ENV_VARS
     from .hadoop.config import HadoopConfig
 
     # read the driver configuration and load the environment variables
@@ -230,7 +234,7 @@ def _driver_info(context: str | None = None):
     env_vars = {
         env_key: os.getenv(env_key)
         for env_key in os.environ
-        if any(key in env_key for key in ("SKEIN", "HADOOP", "KRB5", "YARN", "HDFS"))
+        if any(env_key.startswith(prefix) for prefix in CHECK_ENV_VARS)
     }
 
     # Create a console for rich output
@@ -412,7 +416,7 @@ def driver_info(context: str | None = None):
 @click.option(
     "--log",
     metavar="{PATH, True}",
-    callback=_validate_log,
+    callback=_validate_bool,
     default=None,
     help=(
         "Whether to log the driver output to the console or a file. Option "

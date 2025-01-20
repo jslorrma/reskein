@@ -38,7 +38,7 @@ class HDFSFileSystem(WebHDFS):
         path: str | None = None,
         data: dict | list[tuple[str, Any]] | bytes | IO | None = None,
         redirect: bool = True,
-        **kwargs,
+        **kwargs: dict[str, Any],
     ):
         """Patch fsspec WebHDFS `_call` method using exception handling"""
         try:

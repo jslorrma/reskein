@@ -112,7 +112,7 @@ def make_request(  # noqa: PLR0913
     data: dict[str, Any] | bytes | None = None,
     timeout: int | float | None = None,
     raise_for_status: bool = True,
-    **kwargs,
+    **kwargs: dict[str, Any],
 ) -> Response | None:
     """
     Make a request to a REST API.

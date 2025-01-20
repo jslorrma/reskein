@@ -59,7 +59,7 @@ import pathlib
 import re
 import xml.etree.ElementTree as ET
 from functools import wraps
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 # module imports
@@ -92,7 +92,7 @@ def config_cache(func: Callable):
     conf_files_ts = {}
 
     @wraps(func)
-    def wrapper(conf_file, *args, **kwargs):
+    def wrapper(conf_file, *args: tuple, **kwargs: dict[str, Any]):
         # Check if the configuration file is already in the cache
         if conf_file not in conf_files_ts:
             # If the file is not in the cache, log its modification time
@@ -105,7 +105,7 @@ def config_cache(func: Callable):
             func.cache_clear()
 
         # Call the original function and return its result
-        return func(conf_file, *args, **kwargs)
+        return func(conf_file, *args: tuple, **kwargs)
 
     return wrapper
 
@@ -207,7 +207,7 @@ class HadoopConfig:
     _instance: HadoopConfig | None = None
     _config_path: PathType | None = None
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: tuple, **kwargs: dict[str, Any]):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         elif args or kwargs:

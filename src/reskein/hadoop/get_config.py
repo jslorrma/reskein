@@ -38,6 +38,7 @@ import pathlib
 import warnings
 import xml.etree.ElementTree as ET
 from io import StringIO
+from typing import Any
 
 import requests
 
@@ -56,11 +57,11 @@ def from_cluster(
     out_path: PathType | None = None,
     name: str | None = None,
     auth: requests.auth.AuthBase | None = None,
-    **kwargs,
+    **kwargs: dict[str, Any],
 ):
     """
-    Get Hadoop configuration (`core-site.xml`, `yarn-site.xml`, `hdfs-site.xml`) from a Hadoop
-    cluster.
+    Get Hadoop configuration (`core-site.xml`, `yarn-site.xml`, `hdfs-site.xml`) from an existing
+    Hadoop cluster.
 
     The configuration parameters are retrieved from the multiple web interfaces of the Hadoop
     cluster services.
